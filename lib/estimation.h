@@ -18,6 +18,6 @@ void pose_estimation_2d2d (
     std::vector<KeyPoint> keypoints_2,
     std::vector< DMatch > matches,
     Mat& R, Mat& t );
-
+bool estabilize (Mat &frame0, Mat &frame, Mat &output);
 // 像素坐标转相机归一化坐标
 Point2d pixel2cam ( const Point2d& p, const Mat& K );

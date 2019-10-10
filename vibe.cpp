@@ -8,6 +8,7 @@
 #include<sstream>
 #include<vector>
 #include "optical.h"
+#include "estimation.h"
 
 using namespace cv;
 using namespace std;
@@ -156,15 +157,18 @@ int main ( int argc, char** argv )
         i++;
         
         //waitKey(20); 
-        //cvtColor(frame, dstframe, CV_BGR2GRAY);
+        cvtColor(frame, dstframe, CV_BGR2GRAY);
         //tracking(frame, _, dstframe);
-        videostabilize(frame, dstframe);
+        //videostabilize(frame, dstframe);
+      
+        
         imshow("stabilize", dstframe);
         if (i==1){
-            
+            frame0 = frame;
             initial_background(dstframe, samples);
             continue;
         }
+        estabilize(frame0, frame, dstframe);
         Mat segmap = Mat::zeros(dstframe.rows, dstframe.cols, CV_8UC1);
         vibe_detection(dstframe, samples, segmap, _min, R, s);
         
@@ -173,6 +177,7 @@ int main ( int argc, char** argv )
         //rectangle(frame, Rect(frame.cols/2-50, frame.rows/2-50, 100, 100), Scalar(0, 0, 255), 2, 8 );
         imshow("capturevide",frame);
         imshow("beforblur",segmap);
+        //imshow("222", dstframe);
         
         Mat bimage;
         threshold(outmap, bimage, 100, 255,THRESH_BINARY);

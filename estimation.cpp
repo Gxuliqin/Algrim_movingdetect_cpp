@@ -3,6 +3,8 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include "estimation.h"
 // #include "extra.h" // use this if in OpenCV2 
 using namespace std;
 using namespace cv;
@@ -13,7 +15,7 @@ using namespace cv;
 
 
 
-int main ( int argc, char** argv )
+bool estabilize (Mat &frame0, Mat &frame, Mat &output)
 {
    // if ( argc != 3 )
    // {
@@ -21,18 +23,21 @@ int main ( int argc, char** argv )
     //    return 1;
    // }
     //-- 读取图像
-    Mat img_1 = imread ( "1.png", CV_LOAD_IMAGE_COLOR );
-    Mat img_2 = imread ( "2.png", CV_LOAD_IMAGE_COLOR );
+//     Mat img_1 = imread ( "1.png", CV_LOAD_IMAGE_COLOR );
+//     Mat img_2 = imread ( "2.png", CV_LOAD_IMAGE_COLOR );
 
     vector<KeyPoint> keypoints_1, keypoints_2;
     vector<DMatch> matches;
-    find_feature_matches ( img_1, img_2, keypoints_1, keypoints_2, matches );
+    find_feature_matches ( frame0, frame, keypoints_1, keypoints_2, matches );
     cout<<"一共找到了"<<matches.size() <<"组匹配点"<<endl;
 
     //-- 估计两张图像间运动
     Mat R, t;
     pose_estimation_2d2d ( keypoints_1, keypoints_2, matches, R, t );
-
+    
+	Mat affinemat;
+    affinemat = R*t;
+    warpAffine(frame, output, affinemat, frame.size());
     //-- 验证E=t^R*scale
     Mat t_x = ( Mat_<double> ( 3,3 ) <<
                 0,                      -t.at<double> ( 2,0 ),     t.at<double> ( 1,0 ),
@@ -52,7 +57,7 @@ int main ( int argc, char** argv )
         Mat d = y2.t() * t_x * R * y1;
         cout << "epipolar constraint = " << d << endl;
     }
-    return 0;
+    return true;
 }
 
 void find_feature_matches ( const Mat& img_1, const Mat& img_2,
